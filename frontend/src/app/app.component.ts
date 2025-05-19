@@ -150,6 +150,7 @@ export class AppComponent {
   loading = false;
 
   messages: Message[] = [];
+  planMessages: Message[] = [];
   plan: PlanDto | null = null;
   execution: PlanResult | null = null;
   clarificationRequest: string | null = null;
@@ -187,12 +188,22 @@ export class AppComponent {
     this.clarificationRequest = null;
     this.loading = true;
 
-    this.llm.getPlan(text).subscribe({
+    this.planMessages.push({ role: 'user', content: text });
+
+    this.llm.getPlan(this.planMessages).subscribe({
       next: (p) => {
-        if ((p as any).clarificationRequest) {
-          this.clarificationRequest = (p as any).clarificationRequest;
+        if (p.clarificationRequest) {
+          this.clarificationRequest = p.clarificationRequest;
+          this.planMessages.push({
+            role: 'assistant',
+            content: p.clarificationRequest,
+          });
         } else {
           this.plan = p;
+          this.planMessages.push({
+            role: 'assistant',
+            content: JSON.stringify(p, null, 2),
+          });
         }
         this.loading = false;
       },

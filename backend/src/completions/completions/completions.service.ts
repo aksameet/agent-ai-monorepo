@@ -7,28 +7,27 @@ import { PromptLoaderService } from 'utils/prompt-loader.service';
 export class CompletionsService {
   private readonly endpoint = 'https://api.groq.com/openai/v1/chat/completions';
   private readonly apiKey = process.env.GROQ_API_KEY;
-  private readonly model = 'deepseek-r1-distill-llama-70b';
 
   constructor(
     private readonly http: HttpService,
     private readonly promptLoader: PromptLoaderService,
   ) {}
 
-  async forwardPlan(prompt: string) {
+  async forwardPlan(messages: { role: string; content: string }[]) {
     const system = this.promptLoader.load('planning');
+
     const headers = {
       Authorization: `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json',
     };
 
+    const full = [{ role: 'system', content: system }, ...messages];
+
     const body = {
-      model: this.model,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: prompt },
-      ],
-      temperature: 0.3,
+      model: 'deepseek-r1-distill-llama-70b',
+      messages: full,
       max_tokens: 1000,
+      temperature: 0.3,
     };
 
     const { data } = await firstValueFrom(
@@ -39,7 +38,7 @@ export class CompletionsService {
 
   async forwardChat(body: any) {
     const system = this.promptLoader.load('chat');
-    body.model = this.model;
+    body.model = 'deepseek-r1-distill-llama-70b';
     body.messages.unshift({ role: 'system', content: system });
 
     const headers = {

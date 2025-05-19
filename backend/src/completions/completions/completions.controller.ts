@@ -1,21 +1,19 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { CompletionsService } from './completions.service';
 
 @Controller('v1')
 export class CompletionsController {
-  constructor(private readonly svc: CompletionsService) {}
+  constructor(private readonly completions: CompletionsService) {}
 
-  /* ---------- zwykły chat ---------- */
   @Post('chat/completions')
-  chat(@Body() body: any) {
+  async chat(@Body() body: any) {
     console.log('▶️ [Controller] chat body:', body);
-    return this.svc.forwardChat(body);
+    return this.completions.forwardChat(body);
   }
 
-  /* ---------- generowanie planu ---------- */
   @Post('plan')
-  plan(@Body() body: { prompt: string }) {
-    console.log('▶️ [Controller] plan prompt:', body.prompt);
-    return this.svc.forwardPlan(body.prompt);
+  async plan(@Body() body: { messages: { role: string; content: string }[] }) {
+    console.log('▶️ [Controller] plan messages:', body.messages);
+    return this.completions.forwardPlan(body.messages);
   }
 }

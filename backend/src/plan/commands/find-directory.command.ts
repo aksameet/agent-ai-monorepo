@@ -1,28 +1,39 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export function findDirectory(name: string, within: string) {
+export function findDirectory({
+  name,
+  within,
+  startsWith = false,
+}: {
+  name: string;
+  within: string;
+  startsWith?: boolean;
+}) {
   const matches: string[] = [];
 
-  function search(dir: string) {
-    let entries: fs.Dirent[] = [];
+  function walk(dir: string) {
+    let entries: fs.Dirent[];
     try {
       entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch (err) {
-      return; // Brak uprawnień – pomijamy
+    } catch (e) {
+      return; // skip folders without permission
     }
 
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        if (entry.name === name) {
-          matches.push(fullPath);
-        }
-        search(fullPath); // Rekurencyjnie wchodzimy głębiej
+        const match =
+          startsWith && entry.name.startsWith(name)
+            ? true
+            : !startsWith && entry.name === name;
+
+        if (match) matches.push(fullPath);
+        walk(fullPath);
       }
     }
   }
 
-  search(within);
+  walk(within);
   return { matches };
 }

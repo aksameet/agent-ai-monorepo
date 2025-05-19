@@ -14,10 +14,9 @@ export class LlmService {
 
   constructor(private http: HttpClient) {}
 
-  /** Zapytanie do modelu (chat mode) */
   queryLLM(prompt: string): Observable<string> {
     const body = {
-      model: 'deepseek-r1-distill-llama-70b', // używamy Groq
+      model: 'deepseek-r1-distill-llama-70b',
       messages: [
         { role: 'system', content: 'You are a helpful assistant.' },
         { role: 'user', content: prompt },
@@ -25,33 +24,27 @@ export class LlmService {
       max_tokens: 500,
       temperature: 0.7,
     };
-
     return this.http
       .post<any>(this.chatUrl, body)
       .pipe(map((r) => r.choices[0].message.content.trim()));
   }
 
-  /** Generowanie planu JSON */
-  getPlan(prompt: string): Observable<PlanDto> {
+  getPlan(messages: { role: string; content: string }[]): Observable<PlanDto> {
     return this.http
-      .post<any>(this.planUrl, { prompt })
+      .post<any>(this.planUrl, { messages })
       .pipe(map((r) => this.parseJson(r.choices[0].message.content)));
   }
 
-  /** Bezpieczne parsowanie JSON z modelu */
   private parseJson(raw: string): PlanDto {
-    const cleaned = raw.replace(/```[\s\S]*?```/g, (match) => {
-      return match.replace(/```[a-zA-Z]*\n?/, '').replace(/```$/, '');
-    });
-
+    const cleaned = raw.replace(/```[\s\S]*?```/g, (match) =>
+      match.replace(/```[a-zA-Z]*\n?/, '').replace(/```$/, '')
+    );
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error('No JSON detected in LLM response');
 
     try {
       const parsed = JSON.parse(jsonMatch[0].trim());
-      if (parsed.actions || parsed.clarificationRequest) {
-        return parsed as PlanDto;
-      }
+      if (parsed.actions || parsed.clarificationRequest) return parsed;
       throw new Error('No valid structure in response');
     } catch (e) {
       console.error('[LlmService] JSON parse error:', e);
