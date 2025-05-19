@@ -4,6 +4,8 @@ import { createFile } from './commands/create-file.command';
 import { runCommand } from './commands/run-command.command';
 import { listFiles } from './commands/list-files.command';
 import { findDirectory } from './commands/find-directory.command';
+import { readFile } from './commands/read-file.command';
+import { writeFile } from './commands/write-file.command';
 
 @Injectable()
 export class PlanService {
@@ -15,6 +17,12 @@ export class PlanService {
       switch (action.type) {
         case 'createFile':
           result = createFile(action.args.path, action.args.content);
+          break;
+        case 'writeFile':
+          result = writeFile(action.args.path, action.args.content);
+          break;
+        case 'readFile':
+          result = readFile(action.args.path);
           break;
         case 'runCommand':
           result = await runCommand(action.args.cmd);
