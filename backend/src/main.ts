@@ -12,3 +12,6 @@ async function bootstrap() {
   console.log('Backend listening on http://localhost:3000');
 }
 bootstrap();
+
+import * as dotenv from 'dotenv';
+dotenv.config();

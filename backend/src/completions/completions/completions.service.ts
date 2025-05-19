@@ -6,8 +6,7 @@ import { PromptLoaderService } from 'utils/prompt-loader.service';
 @Injectable()
 export class CompletionsService {
   private readonly endpoint = 'https://api.groq.com/openai/v1/chat/completions';
-  private readonly apiKey =
-    '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';
+  private readonly apiKey = process.env.GROQ_API_KEY;
   private readonly model = 'deepseek-r1-distill-llama-70b';
 
   constructor(
