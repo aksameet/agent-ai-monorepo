@@ -4,6 +4,7 @@ import { createFile } from './commands/create-file.command';
 import { runCommand } from './commands/run-command.command';
 import { listFiles } from './commands/list-files.command';
 import { findDirectory } from './commands/find-directory.command';
+import { readFile } from './commands/read-file.command';
 
 @Injectable()
 export class PlanService {
@@ -46,6 +47,10 @@ export class PlanService {
             next.args.path = matches[0];
           }
 
+          break;
+
+        case 'readFile':
+          result = readFile(action.args.path);
           break;
 
         default:
